@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Minha IA</title>
+<style>
+    body { font-family: Arial; background:#111; color:white; padding:20px; }
+    input, textarea, button {
+        width:100%; padding:10px; margin-top:10px;
+        border:none; border-radius:6px; font-size:16px;
+    }
+    button { background:#4CAF50; color:white; font-weight:bold; cursor:pointer; }
+    #responseBox {
+        background:#222; padding:15px; border-radius:6px;
+        height:200px; overflow-y:scroll; margin-top:10px; white-space:pre-wrap;
+    }
+    #copyBtn { background:#008CBA; margin-top:10px; }
+</style>
+</head>
+<body>
+
+<h2>💬 Minha IA</h2>
+
+<label>API Key do Google:</label>
+<input id="apiKey" placeholder="Cole sua API Key">
+
+<label>Prompt da IA:</label>
+<textarea id="prompt" placeholder="Como você quer que a IA responda?"></textarea>
+
+<label>Sua mensagem:</label>
+<textarea id="userMessage" placeholder="Digite sua pergunta"></textarea>
+
+<button onclick="sendMessage()">Enviar</button>
+
+<h3>Resposta:</h3>
+<div id="responseBox">A resposta vai aparecer aqui...</div>
+
+<button id="copyBtn" onclick="copyResponse()">Copiar Resposta</button>
+
+<script>
+async function sendMessage() {
+    const apiKey = document.getElementById("apiKey").value;
+    const prompt = document.getElementById("prompt").value;
+    const userMsg = document.getElementById("userMessage").value;
+
+    document.getElementById("responseBox").textContent = "Gerando resposta...";
+
+    const res = await fetch(
+        "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=" + apiKey,
+        {
+            method:"POST",
+            headers:{"Content-Type":"application/json"},
+            body:JSON.stringify({
+                contents:[{
+                    parts:[{ text: prompt + "\n\nPergunta: " + userMsg }]
+                }]
+            })
+        }
+    );
+
+    const data = await res.json();
+
+    document.getElementById("responseBox").textContent =
+        data?.candidates?.[0]?.content?.parts?.[0]?.text ||
+        "Erro: resposta vazia.";
+}
+
+function copyResponse() {
+    const txt = document.getElementById("responseBox").textContent;
+    navigator.clipboard.writeText(txt);
+    alert("Resposta copiada!");
+}
+</script>
+
+</body>
+</html>
